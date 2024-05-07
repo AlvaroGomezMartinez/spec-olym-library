@@ -1,9 +1,9 @@
-const sourceIndexColumn = 22; // Index column in the source data (1-based indexing)
-const targetIndexColumn = 13; // Index column in the target sheet (1-based indexing)
+const sourceIndexColumn = 13; // Index column in the source data (1-based indexing)
+const targetIndexColumn = 22; // Index column in the target sheet (1-based indexing)
 
 // Column mappings for different scenarios
-const columnMappingOption1 = [1, 2, 3, 4, 9, 10, 11, 12, 13, 14, 15, 16, 22]; // Example columns for the first type
-const columnMappingOption2 = [1, 2, 3, 4, 9, 10, 11, 17, 18, 19, 20, 21, 22]; // Example columns for the second type
+const columnMappingOption1 = [ , , , , , , , , , , , , , , 11, 12, , , , , , ]; // Example columns for the first type
+const columnMappingOption2 = [ , , , , , , , , , , , , , , , , , , , 11, 12, ]; // Example columns for the second type
 
 function getColumnMapping(sheetName) {
 if (sheetName.includes("Males-25 M Assisted Walk") || sheetName.includes("Males-25 M Assisted Device") || sheetName.includes("Males-25 M Assisted WC") || sheetName.includes("Males-25 M Manual WC") || sheetName.includes("Males-30 M Slalom") || sheetName.includes("Males-50 M Run") || sheetName.includes("Males-50 M Manual WC") || sheetName.includes("Males-100 M Run") || sheetName.includes("Females-25 M Assisted Walk") || sheetName.includes("Females-25 M Assisted Device") || sheetName.includes("Females-25 M Assisted WC") || sheetName.includes("Females-25 M Manual WC") || sheetName.includes("Females-30 M Slalom") || sheetName.includes("Females-50 M Run") || sheetName.includes("Females-50 M Manual WC") || sheetName.includes("Females-100 M Run")) {
@@ -51,28 +51,60 @@ function updateTargetSheet(sourceData, targetSheet, columnMapping, targetMap, so
   // Apply the updates to the target sheet
   updates.forEach((update) => {
     const rowIndex = update.index + 1; // Google Sheets are 1-indexed
-    const mappedData = extractMappedColumns(update.row, columnMapping); // Extract data for specified columns
+    // const mappedData = extractMappedColumns(update.row, columnMapping); // Extract data for specified columns
     
-    // Set the values in the correct columns in the target sheet
-    columnMapping.forEach((col, i) => {
-      targetSheet.getRange(rowIndex, col).setValue(mappedData[i]);
-    });
+    // // Set the values in the correct columns in the target sheet
+    // columnMapping.forEach((col, i) => {
+    //   targetSheet.getRange(rowIndex, col).setValue(mappedData[i]);
+    // });
+    let mappedData;
+
+    if (columnMapping === columnMappingOption1) {
+      // For columnMappingOption1, map data from columns 11, 12, and 13 of the source data to columns 15, 16, and 22 of the target sheet
+      mappedData = [update.row[10], update.row[11]]; // Extract data from columns 11, 12
+      targetSheet.getRange(rowIndex, 15, 1, 2).setValues([mappedData]); // Set the values in columns 15, 16, and 22 of the target sheet
+    } else if (columnMapping === columnMappingOption2) {
+      // For columnMappingOption2, map data from columns 11, 12, and 13 of the source data to columns 20, 21, and 22 of the target sheet
+      mappedData = [update.row[10], update.row[11], update.row[12]]; // Extract data from columns 11, 12, and 13
+      targetSheet.getRange(rowIndex, 20, 1, 3).setValues([mappedData]); // Set the values in columns 20, 21, and 22 of the target sheet
+    }
   });
 
   // Insert new entries at the end
+  // if (newEntries.length > 0) {
+  //   const rearrangedNewEntries = newEntries.map((row) => extractMappedColumns(row, columnMapping)); // Rearrange new entries
+  //   const lastRow = targetSheet.getLastRow(); // Index of the last row in the target sheet
+
+  //   rearrangedNewEntries.forEach((entry, index) => {
+  //     entry.forEach((value, i) => {
+  //       targetSheet.getRange(lastRow + index + 1, columnMapping[i]).setValue(value); // Insert at the correct column
+  //     });
+  //   });
+  // }
+
   if (newEntries.length > 0) {
-    const rearrangedNewEntries = newEntries.map((row) => extractMappedColumns(row, columnMapping)); // Rearrange new entries
     const lastRow = targetSheet.getLastRow(); // Index of the last row in the target sheet
 
-    rearrangedNewEntries.forEach((entry, index) => {
-      entry.forEach((value, i) => {
-        targetSheet.getRange(lastRow + index + 1, columnMapping[i]).setValue(value); // Insert at the correct column
-      });
+    newEntries.forEach((entry) => {
+      let mappedData;
+
+      if (columnMapping === columnMappingOption1) {
+        // For columnMappingOption1, map data from columns 11, 12, and 13 of the source data to columns 15, 16, and 22 of the target sheet
+        mappedData = [entry[10], entry[11], entry[12]]; // Extract data from columns 11, 12, and 13
+        targetSheet.getRange(lastRow + 1, 15, 1, 3).setValues([mappedData]); // Set the values at the end of columns 15, 16, and 22 of the target sheet
+      } else if (columnMapping === columnMappingOption2) {
+        // For columnMappingOption2, map data from columns 11, 12, and 13 of the source data to columns 20, 21, and 22 of the target sheet
+        mappedData = [entry[10], entry[11], entry[12]]; // Extract data from columns 11, 12, and 13
+        targetSheet.getRange(lastRow + 1, 20, 1, 3).setValues([mappedData]); // Set the values at the end of columns 20, 21, and 22 of the target sheet
+      }
+
+      lastRow++; // Increment lastRow for the next iteration
     });
   }
 }
 
 function extractMappedColumns(row, columnMapping) {
+  
   return columnMapping.map((col) => row[col - 1]); // Convert 1-based to 0-based
 }
 
@@ -84,6 +116,12 @@ function pushDataToMainSheet() {
   
   const currentSheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet(); // Get the current sheet
   const sheetName = currentSheet.getName(); // Name of the current sheet
+
+  // The lines below are for debugging. After debugging, uncomment the lines above and comment the ones below out
+  // const sheetWithNewHeatDataId = '1zfk7plACYxlfcO-3tgDXiYgk4FkObANmBCZpWSHPAiA';
+  // const sheetWithNewHeadData = SpreadsheetApp.openById(sheetWithNewHeatDataId);
+  // const currentSheet = sheetWithNewHeadData.getSheetByName("Males-Turbo Jav");
+  // const sheetName = currentSheet.getName();
 
   const sourceData = currentSheet.getDataRange().getValues().slice(1); // Source data to update the target sheet, excluding the first row
   const columnMapping = getColumnMapping(sheetName); // Determine the correct column mapping

@@ -85,7 +85,7 @@ function pushDataToMainSheet() {
   const currentSheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet(); // Get the current sheet
   const sheetName = currentSheet.getName(); // Name of the current sheet
 
-  const sourceData = currentSheet.getDataRange().getValues(); // Source data to update the target sheet
+  const sourceData = currentSheet.getDataRange().getValues().slice(1); // Source data to update the target sheet, excluding the first row
   const columnMapping = getColumnMapping(sheetName); // Determine the correct column mapping
 
   const targetSpreadsheet = SpreadsheetApp.openById(targetSpreadsheetId);

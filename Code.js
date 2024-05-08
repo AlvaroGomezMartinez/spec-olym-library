@@ -1,3 +1,7 @@
+/**
+ * @author Alvaro Gomez &lt;alvaro.gomez@nisd.net>
+ */
+
 const sourceIndexColumn = 13; // Index column in the source data (1-based indexing)
 const targetIndexColumn = 22; // Index column in the target sheet (1-based indexing)
 

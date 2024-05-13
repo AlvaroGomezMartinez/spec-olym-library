@@ -1,7 +1,3 @@
-/**
- * @author Alvaro Gomez &lt;alvaro.gomez@nisd.net>
- */
-
 const sourceIndexColumn = 13; // Index column in the source data (1-based indexing)
 const targetIndexColumn = 22; // Index column in the target sheet (1-based indexing)
 
@@ -108,7 +104,6 @@ function updateTargetSheet(sourceData, targetSheet, columnMapping, targetMap, so
 }
 
 function extractMappedColumns(row, columnMapping) {
-  
   return columnMapping.map((col) => row[col - 1]); // Convert 1-based to 0-based
 }
 
@@ -137,4 +132,10 @@ function pushDataToMainSheet() {
   const targetMap = createTargetMap(targetSheet, targetIndexColumn);
 
   updateTargetSheet(sourceData, targetSheet, columnMapping, targetMap, sourceIndexColumn, targetIndexColumn); // Update the target sheet
+  
+  const currentDate = new Date();
+  const formattedDate = Utilities.formatDate(currentDate, Session.getScriptTimeZone(), 'EEE MMM dd yyyy hh:mm a');
+  const comment = "Data pushed back to the main database on: " + formattedDate;
+  const cell = currentSheet.getRange("A1");
+  cell.setComment(comment);
 }
